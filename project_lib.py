@@ -765,7 +765,7 @@ def narrate_my_trip(vacation_info, itinerary, filename="speech.mp3"):
 
     client = OpenAI(
     base_url="https://openai.vocareum.com/v1",
-    api_key="Your-API-Key-Here",
+    api_key="voc-1528689085160736365463468376c73845a55.15105883",
     )
 
     with client.audio.speech.with_streaming_response.create(
