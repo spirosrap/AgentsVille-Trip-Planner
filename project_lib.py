@@ -779,140 +779,60 @@ def narrate_my_trip(vacation_info, itinerary, filename="speech.mp3"):
     display(Audio(filename))
 
 
+# List of available tools and their descriptions
+TOOLS = [
+    {
+        "name": "weather",
+        "description": "Get weather conditions for specific dates and locations",
+        "purpose": "Verify weather compatibility with planned activities",
+        "parameters": '{"tool": "weather", "date": "YYYY-MM-DD", "city": "CityName"}',
+        "use_when": "Evaluation shows weather-activity conflicts"
+    },
+    {
+        "name": "events",
+        "description": "Retrieve available activities and events for specific dates and locations",
+        "purpose": "Find alternative activities or verify activity details",
+        "parameters": '{"tool": "events", "date": "YYYY-MM-DD", "city": "CityName"}',
+        "use_when": "Need to replace inappropriate activities or find better options"
+    },
+    {
+        "name": "get_activities_by_date",
+        "description": "Enhanced activity lookup with comprehensive details",
+        "purpose": "Get detailed activity information for informed decision-making",
+        "parameters": '{"tool": "get_activities_by_date", "date": "YYYY-MM-DD", "city": "CityName"}',
+        "use_when": "Need comprehensive activity data for revision planning"
+    },
+    {
+        "name": "total_cost_calculator",
+        "description": "Calculate total cost of a list of activities",
+        "purpose": "Verify budget compliance and cost accuracy",
+        "parameters": '{"tool": "total_cost_calculator", "activities": [list_of_activity_objects]}',
+        "use_when": "Evaluation shows cost calculation errors or budget issues"
+    },
+    {
+        "name": "run_evals_tool",
+        "description": "Run comprehensive evaluation checks on revised itinerary",
+        "purpose": "Validate that revisions address all identified issues",
+        "parameters": '{"tool": "run_evals_tool", "vacation_info": vacation_object, "itinerary": revised_itinerary_object}',
+        "use_when": "Ready to test if your revisions solved the evaluation errors. CRITICAL: You MUST run this tool before submitting your final answer."
+    },
+    {
+        "name": "final_answer_tool",
+        "description": "Submit your completed revised itinerary",
+        "purpose": "Provide the final, evaluation-tested itinerary",
+        "parameters": '{"tool": "final_answer_tool", "city": "CityName", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD", "itinerary": [list_of_itinerary_items], "total_cost": total_cost}',
+        "use_when": "run_evals_tool confirms all issues are resolved"
+    },
+]
+
 def get_tool_descriptions_string():
     """
-    Generates a dynamic string description of all available tools and their purposes.
-    
-    This function concatenates docstrings and tool information to create a comprehensive
-    tools description for system prompts.
-    
-    Returns:
-        str: Formatted string containing all tool descriptions
+    Returns a formatted string of all available tools and their descriptions for prompt insertion.
     """
-    
-    # Define the available tools with their details
-    tools = [
-        {
-            "name": "weather",
-            "description": "Get weather conditions for specific dates and locations",
-            "purpose": "Verify weather compatibility with planned activities",
-            "parameters": '{"tool": "weather", "date": "YYYY-MM-DD", "city": "CityName"}',
-            "usage": "Use when: Evaluation shows weather-activity conflicts"
-        },
-        {
-            "name": "events",
-            "description": "Retrieve available activities and events for specific dates and locations",
-            "purpose": "Find alternative activities or verify activity details", 
-            "parameters": '{"tool": "events", "date": "YYYY-MM-DD", "city": "CityName"}',
-            "usage": "Use when: Need to replace inappropriate activities or find better options"
-        },
-        {
-            "name": "get_activities_by_date",
-            "description": "Enhanced activity lookup with comprehensive details",
-            "purpose": "Get detailed activity information for informed decision-making",
-            "parameters": '{"tool": "get_activities_by_date", "date": "YYYY-MM-DD", "city": "CityName"}',
-            "usage": "Use when: Need comprehensive activity data for revision planning"
-        },
-        {
-            "name": "total_cost_calculator", 
-            "description": "Calculate total cost of a list of activities",
-            "purpose": "Verify budget compliance and cost accuracy",
-            "parameters": '{"tool": "total_cost_calculator", "activities": [list_of_activity_objects]}',
-            "usage": "Use when: Evaluation shows cost calculation errors or budget issues"
-        },
-        {
-            "name": "run_evals_tool",
-            "description": "Run comprehensive evaluation checks on revised itinerary",
-            "purpose": "Validate that revisions address all identified issues",
-            "parameters": '{"tool": "run_evals_tool", "vacation_info": vacation_object, "itinerary": revised_itinerary_object}',
-            "usage": "Use when: Ready to test if your revisions solved the evaluation errors. **CRITICAL**: You MUST run this tool before submitting your final answer"
-        },
-        {
-            "name": "final_answer_tool",
-            "description": "Submit your completed revised itinerary",
-            "purpose": "Provide the final, evaluation-tested itinerary",
-            "parameters": '{"tool": "final_answer_tool", "city": "CityName", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD", "itinerary": [...], "total_cost": number}',
-            "usage": "Use when: run_evals_tool confirms all issues are resolved"
-        }
-    ]
-    
-    # Generate the tools description
-    tools_description = []
-    
-    tools_description.append("## Available Tools and Their Purposes:")
-    tools_description.append("")
-    tools_description.append("### Data Gathering Tools:")
-    
-    # Add data gathering tools (1-3)
-    for i, tool in enumerate(tools[:3], 1):
-        tools_description.append(f"{i}. **{tool['name']}** - {tool['description']}")
-        tools_description.append(f"   - Purpose: {tool['purpose']}")
-        tools_description.append(f"   - Parameters: {tool['parameters']}")
-        tools_description.append(f"   - {tool['usage']}")
-        tools_description.append("")
-    
-    tools_description.append("### Calculation Tools:")
-    
-    # Add calculation tool (4)
-    tool = tools[3]
-    tools_description.append(f"4. **{tool['name']}** - {tool['description']}")
-    tools_description.append(f"   - Purpose: {tool['purpose']}")
-    tools_description.append(f"   - Parameters: {tool['parameters']}")
-    tools_description.append(f"   - {tool['usage']}")
-    tools_description.append("")
-    
-    tools_description.append("### Evaluation and Quality Assurance:")
-    
-    # Add evaluation and final tools (5-6)
-    for i, tool in enumerate(tools[4:], 5):
-        tools_description.append(f"{i}. **{tool['name']}** - {tool['description']}")
-        tools_description.append(f"   - Purpose: {tool['purpose']}")
-        tools_description.append(f"   - Parameters: {tool['parameters']}")
-        tools_description.append(f"   - {tool['usage']}")
-        tools_description.append("")
-    
-    # Add TravelPlan schema information
-    tools_description.append("## Required Output Format:")
-    tools_description.append("")
-    tools_description.append("Your final output must conform to the TravelPlan Pydantic model schema:")
-    tools_description.append("")
-    tools_description.append("```json")
-    tools_description.append("{")
-    tools_description.append('    "tool": "final_answer_tool",')
-    tools_description.append('    "city": "CityName",')
-    tools_description.append('    "start_date": "YYYY-MM-DD",')
-    tools_description.append('    "end_date": "YYYY-MM-DD",')
-    tools_description.append('    "itinerary": [')
-    tools_description.append('        {')
-    tools_description.append('            "date": "YYYY-MM-DD",')
-    tools_description.append('            "weather": "weather description",')
-    tools_description.append('            "activities": [')
-    tools_description.append('                {')
-    tools_description.append('                    "name": "Activity Name",')
-    tools_description.append('                    "description": "Brief description",')
-    tools_description.append('                    "time": "HH:MM",')
-    tools_description.append('                    "duration": "X hours",')
-    tools_description.append('                    "price": 50,')
-    tools_description.append('                    "category": "cultural/outdoor/dining/entertainment",')
-    tools_description.append('                    "location": "Venue address (optional)"')
-    tools_description.append('                }')
-    tools_description.append('            ]')
-    tools_description.append('        }')
-    tools_description.append('    ],')
-    tools_description.append('    "total_cost": 500')
-    tools_description.append("}")
-    tools_description.append("```")
-    tools_description.append("")
-    tools_description.append("This output format matches the TravelPlan Pydantic model schema for proper validation and structure.")
-    tools_description.append("")
-    
-    # Add EXACT ACTION FORMAT section
-    tools_description.append("## EXACT ACTION FORMAT:")
-    tools_description.append("When invoking tools, use this precise JSON format:")
-    tools_description.append('{"tool_name": "[tool_name]", "arguments": {"arg1": "value1", "arg2": "value2", ...}}')
-    tools_description.append("")
-    tools_description.append("Examples:")
-    tools_description.append('- {"tool": "weather", "date": "2025-06-10", "city": "AgentsVille"}')
-    tools_description.append('- {"tool": "events", "date": "2025-06-10", "city": "AgentsVille"}')
-    
-    return "\n".join(tools_description)
+    lines = ["### Available Tools and Their Purposes:\n"]
+    for idx, tool in enumerate(TOOLS, 1):
+        lines.append(f"{idx}. **{tool['name']}** – {tool['description']}")
+        lines.append(f"   - Purpose: {tool['purpose']}")
+        lines.append(f"   - Parameters: {tool['parameters']}")
+        lines.append(f"   - Use when: {tool['use_when']}\n")
+    return "\n".join(lines)
